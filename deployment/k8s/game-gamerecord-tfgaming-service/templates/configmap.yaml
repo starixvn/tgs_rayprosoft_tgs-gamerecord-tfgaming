@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-{{ include "game-gamerecord-tfgaming-service.name" . }}
+  namespace: {{ .Release.Namespace }}
+data:
+  appsettings.json: |
+    {
+      "GameRecordInfo": {
+        "GameProviderCode": "TFTF",
+        "MinIntervalMinute": 5,
+        "MaxIntervalMinute": 30,
+        "IntervalMinute": 15,
+        "LockMinute": 14,
+        "MongoDefine": "gp.gamerecord.database",
+        "MongoGlobPattern": "tgs.gp.gamerecord.database.round.tftf",
+        "GameExternalId": "esports"
+      },
+      "NatsSetting": {
+        "Group": "gp.gamerecord.schedule",
+        "Subject": "gp.gamerecord.schedule.tftf"
+      },
+      "GameRecord": {
+         "GameProvidersQueryServerBaseUrl": "http://game-gameprovider-queryserver/",
+         "GameInterfaceBaseUrl": "http://game-gameinterface-tfgaming-service:9090/"
+      }
+    }
+  monitor.settings.json: |
+    {
+      "Metrics": {
+        "MetricCount": "1"
+      },
+      "Logging":{
+        "Console": {
+          "FormatterName": "json"
+        },
+        "LogLevel": {
+          "Default": "Warning",
+          "Microsoft": "Warning",
+          "Microsoft.Diagnostics": "Warning",
+          "Microsoft.Hosting.Lifetime": "Information"
+        }
+      }
+    }
