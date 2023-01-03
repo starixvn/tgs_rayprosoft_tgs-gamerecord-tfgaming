@@ -14,7 +14,7 @@ data:
         "LockMinute": 14,
         "MongoDefine": "gp.gamerecord.database",
         "MongoGlobPattern": "tgs.gp.gamerecord.database.round.tftf",
-        "GameExternalId": "esports"
+        "GameExternalId": "tf_esports"
       },
       "NatsSetting": {
         "Group": "gp.gamerecord.schedule",
