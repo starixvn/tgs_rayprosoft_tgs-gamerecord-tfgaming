@@ -29,26 +29,40 @@ internal class GameHistoryWorkerService : ICommandService<GameHistoryWorkerComma
     {
         try
         {
-            var gameHistoryUnsettleds = await _client
+            int page = 1;
+            int pageSize = 1000;
+            while (true)
+            {
+                var gameHistoryUnsettleds = await _client
                     .GameHistoryUnsettledAsync(
                         apiUrl: command.ApiUrl,
                         privateToken: command.PrivateToken,
                         startTime: command.StartTime.ToUniversalTime(),
                         endTime: command.EndTime.ToUniversalTime(),
+                        page: page,
+                        pageSize: pageSize,
                         cancellationToken: cancellationToken)
                     .ToArrayAsync(cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-            _logger.LogInformation("LogOn:{logOn} | Action:GameHistoryUnsettledAsync | Response:{response}",
-                DateTime.UtcNow.ToString("O"),
-                JsonSerializer.Serialize(gameHistoryUnsettleds));
+                _logger.LogInformation("LogOn:{logOn} | Action:GameHistoryUnsettledAsync | Response:{response}",
+                    DateTime.UtcNow.ToString("O"),
+                    JsonSerializer.Serialize(gameHistoryUnsettleds));
 
-            await _unsettledService
-                .ExecuteAsync(
-                    command: new GamePullRecordUnsettledCommand(
-                        Records: gameHistoryUnsettleds),
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                if (!gameHistoryUnsettleds.Any())
+                {
+                    break;
+                }
+
+                await _unsettledService
+                    .ExecuteAsync(
+                        command: new GamePullRecordUnsettledCommand(
+                            Records: gameHistoryUnsettleds),
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                page++;
+            }
         }
         catch (Exception ex)
         {
@@ -64,7 +78,7 @@ internal class GameHistoryWorkerService : ICommandService<GameHistoryWorkerComma
             {
                 var gameHistorySettleds = await _client
                         .GameHistorySettledAsync(
-                            apiUrl: command.ApiUrl,                          
+                            apiUrl: command.ApiUrl,
                             privateToken: command.PrivateToken,
                             startTime: command.StartTime.ToUniversalTime(),
                             endTime: command.EndTime.ToUniversalTime(),
