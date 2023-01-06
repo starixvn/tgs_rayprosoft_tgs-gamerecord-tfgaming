@@ -56,7 +56,7 @@ internal class GamePullRecordSettledCommandService : ICommandService<GamePullRec
                 record.Status switch
                 {
                     GameHistoryStatus.Draw => GameRoundClientStatus.Draw,
-                    GameHistoryStatus.Canceled => GameRoundClientStatus.Void,
+                    GameHistoryStatus.Cancelled => GameRoundClientStatus.Void,
                     GameHistoryStatus.Win => GameRoundClientStatus.Win,
                     GameHistoryStatus.Loss => GameRoundClientStatus.Loss,
                     _ => (record.PlayerWinLoss > 0) ? GameRoundClientStatus.Win : GameRoundClientStatus.Loss
