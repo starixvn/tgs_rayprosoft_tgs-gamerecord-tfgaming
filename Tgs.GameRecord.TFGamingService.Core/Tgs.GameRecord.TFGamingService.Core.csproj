@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -12,7 +12,7 @@
 		<PackageReference Include="Scrutor" Version="4.2.0" />
 		<PackageReference Include="StackExchange.Redis" Version="2.6.86" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
-		<PackageReference Include="Tgs.GameInterface.TFGamingService.Client" Version="0.0.3" />
+		<PackageReference Include="Tgs.GameInterface.TFGamingService.Client" Version="0.0.4" />
 		<PackageReference Include="Tgs.GameProviders.QueryServer.Client" Version="0.0.16" />
 		<PackageReference Include="Tgs.GameRounds.Client" Version="0.0.32" />
 		<PackageReference Include="Tgs.MessageQueue" Version="2.1.1" />
