@@ -13,28 +13,43 @@ internal class GamePullRecordUnsettledCommandService : ICommandService<GamePullR
     private readonly GameRecordInfoOptions _gameRecordInfo;
     private readonly ILogger<GamePullRecordUnsettledCommandService> _logger;
     private readonly IMessageSender _messageSender;
+    private readonly MongoSettingOptions _mongoSetting;
     private readonly IUtensil _utensil;
 
     public GamePullRecordUnsettledCommandService(
         ILogger<GamePullRecordUnsettledCommandService> logger,
-        IOptions<GameRecordInfoOptions> options,
+        IOptions<GameRecordInfoOptions> gameRecordInfoOptions,
+        IOptions<MongoSettingOptions> mongoSettingOptions,
         IMessageSender messageSender,
         IUtensil utensil)
     {
+        _gameRecordInfo = gameRecordInfoOptions.Value;
+        _mongoSetting = mongoSettingOptions.Value;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _gameRecordInfo = options.Value;
         _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
         _utensil = utensil ?? throw new ArgumentNullException(nameof(utensil));
     }
 
     public async ValueTask ExecuteAsync(GamePullRecordUnsettledCommand command, CancellationToken cancellationToken = default)
     {
-        var gameProviderId = await _utensil.GetGameProviderIdAsync().ConfigureAwait(false);
-        var gameId = await _utensil.GetGameIdAsync(gameProviderId, _gameRecordInfo.GameExternalId).ConfigureAwait(false);
+        var gameProviderId = await _utensil
+            .GetGameProviderIdAsync(
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+        var gameId = await _utensil
+            .GetGameIdAsync(
+                gameProviderId: gameProviderId,
+                gameExternalId: _gameRecordInfo.GameExternalId,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
         foreach (var record in command.Records)
         {
             bool success = true;
-            var playerModel = await _utensil.GetPlayerAsync(record.PlayerCode).ConfigureAwait(false);
+            var playerModel = await _utensil
+                .GetPlayerAsync(
+                    playerCode: record.PlayerCode,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
             if (playerModel == null)
             {
@@ -44,14 +59,19 @@ internal class GamePullRecordUnsettledCommandService : ICommandService<GamePullR
             Guid? gameProviderConfigurationId = default;
             if (playerModel != null)
             {
-                gameProviderConfigurationId = await _utensil.BrandGetGameProviderConfigurationIdAsync(playerModel.BrandId, gameProviderId).ConfigureAwait(false);
+                gameProviderConfigurationId = await _utensil
+                    .GetBrandGameProviderConfigurationIdAsync(
+                        brandId: playerModel.BrandId,
+                        gameProviderId: gameProviderId,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
                 if (!gameProviderConfigurationId.HasValue)
                 {
                     success = false;
                 }
             }
 
-            var data = new GameRecordMessage(
+            var message = new GameRecordMessage(
                 ExternalRoundId: record.ExternalRoundId,
                 GameProviderId: gameProviderId,
                 GameProviderCode: _gameRecordInfo.GameProviderCode,
@@ -75,16 +95,17 @@ internal class GamePullRecordUnsettledCommandService : ICommandService<GamePullR
                 AdditionalData: record.AdditionalData,
                 Success: success);
 
-            var subject = _gameRecordInfo.MongoGlobPattern;
-
-            _logger.LogInformation("LogOn:{logOn}  Subject:{subject} MessageRequest:{request}", DateTime.Now.ToString("o"), subject, data);
+            _logger.LogInformation("LogOn:{logOn}  Subject:{subject} MessageRequest:{message}",
+                DateTime.Now.ToString("o"),
+                _mongoSetting.GlobPattern,
+                message);
 
             await _messageSender
-                    .PublishAsync(
-                        subject: subject,
-                        data: data.ToBson(),
-                        cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+                .PublishAsync(
+                    subject: _mongoSetting.GlobPattern,
+                    data: message.ToBson(),
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }
