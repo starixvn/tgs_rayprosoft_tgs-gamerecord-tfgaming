@@ -15,7 +15,7 @@ data:
         "LockMinute": 14
       },
       "GameRecord": {
-         "GameProvidersQueryServerBaseUrl": "http://game-gamecommand/",
+         "GameCommandClientBaseUrl": "http://game-gamecommand/",
          "GameInterfaceBaseUrl": "http://game-gameinterface-tfgaming-service:9090/"
       }
     }
