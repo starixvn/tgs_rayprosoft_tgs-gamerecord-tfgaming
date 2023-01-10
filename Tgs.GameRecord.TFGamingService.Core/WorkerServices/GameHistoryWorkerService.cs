@@ -29,40 +29,27 @@ internal class GameHistoryWorkerService : ICommandService<GameHistoryWorkerComma
     {
         try
         {
-            int page = 1;
-            int pageSize = 1000;
-            while (true)
-            {
-                var gameHistoryUnsettleds = await _client
-                    .GameHistoryUnsettledAsync(
-                        apiUrl: command.ApiUrl,
-                        privateToken: command.PrivateToken,
-                        startTime: command.StartTime.ToUniversalTime(),
-                        endTime: command.EndTime.ToUniversalTime(),
-                        page: page,
-                        pageSize: pageSize,
-                        cancellationToken: cancellationToken)
-                    .ToArrayAsync(cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+            var gameHistoryUnsettleds = await _client
+                .GameHistoryUnsettledAsync(
+                    apiUrl: command.ApiUrl,
+                    privateToken: command.PrivateToken,
+                    startTime: command.StartTime.ToUniversalTime(),
+                    endTime: command.EndTime.ToUniversalTime(),
+                    pageSize: 1000,
+                    cancellationToken: cancellationToken)
+                .ToArrayAsync(cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
-                _logger.LogInformation("LogOn:{logOn} | Action:GameHistoryUnsettledAsync | Response:{response}",
-                    DateTime.UtcNow.ToString("O"),
-                    JsonSerializer.Serialize(gameHistoryUnsettleds));
+            _logger.LogInformation("LogOn:{logOn} | Action:GameHistoryUnsettledAsync | Response:{response}",
+                DateTime.UtcNow.ToString("O"),
+                JsonSerializer.Serialize(gameHistoryUnsettleds));
 
-                if (!gameHistoryUnsettleds.Any())
-                {
-                    break;
-                }
-
-                await _unsettledService
-                    .ExecuteAsync(
-                        command: new GamePullRecordUnsettledCommand(
-                            Records: gameHistoryUnsettleds),
-                        cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-
-                page++;
-            }
+            await _unsettledService
+                .ExecuteAsync(
+                    command: new GamePullRecordUnsettledCommand(
+                        Records: gameHistoryUnsettleds),
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -71,41 +58,27 @@ internal class GameHistoryWorkerService : ICommandService<GameHistoryWorkerComma
 
         try
         {
-            int page = 1;
-            int pageSize = 1000;
-
-            while (true)
-            {
-                var gameHistorySettleds = await _client
-                        .GameHistorySettledAsync(
-                            apiUrl: command.ApiUrl,
-                            privateToken: command.PrivateToken,
-                            startTime: command.StartTime.ToUniversalTime(),
-                            endTime: command.EndTime.ToUniversalTime(),
-                            page: page,
-                            pageSize: pageSize,
-                            cancellationToken: cancellationToken)
-                        .ToArrayAsync(cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-
-                _logger.LogInformation("LogOn:{logOn} | Action:GameHistorySettledAsync | Response:{response}",
-                    DateTime.UtcNow.ToString("O"),
-                    JsonSerializer.Serialize(gameHistorySettleds));
-
-                if (!gameHistorySettleds.Any())
-                {
-                    break;
-                }
-
-                await _settledService
-                    .ExecuteAsync(
-                        command: new GamePullRecordSettledCommand(
-                            Records: gameHistorySettleds),
+            var gameHistorySettleds = await _client
+                    .GameHistorySettledAsync(
+                        apiUrl: command.ApiUrl,
+                        privateToken: command.PrivateToken,
+                        startTime: command.StartTime.ToUniversalTime(),
+                        endTime: command.EndTime.ToUniversalTime(),
+                        pageSize: 1000,
                         cancellationToken: cancellationToken)
+                    .ToArrayAsync(cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                page++;
-            }
+            _logger.LogInformation("LogOn:{logOn} | Action:GameHistorySettledAsync | Response:{response}",
+                DateTime.UtcNow.ToString("O"),
+                JsonSerializer.Serialize(gameHistorySettleds));
+
+            await _settledService
+                .ExecuteAsync(
+                    command: new GamePullRecordSettledCommand(
+                        Records: gameHistorySettleds),
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
