@@ -8,20 +8,14 @@ data:
     {
       "GameRecordInfo": {
         "GameProviderCode": "TFTF",
-        "MinIntervalMinute": 5,
-        "MaxIntervalMinute": 30,
-        "IntervalMinute": 15,
-        "LockMinute": 14,
-        "MongoDefine":  "gp.gamerecord.database.manual",
-        "MongoGlobPattern": "tgs.gp.gamerecord.database.manual.tftf",
-        "GameExternalId": "tf_esports"
-      },
-      "NatsSetting": {
-        "Queue": "gp.gamerecord.manual",
-        "Subject": "gp.gamerecord.manual.tftf"
+        "GameExternalId": "tf_esports",
+        "IntervalMinutes": 15,
+        "IntervalMinutesMax": 1440,
+        "IntervalMinutesMinimum": 2,
+        "LockMinute": 14
       },
       "GameRecord": {
-         "GameProvidersQueryServerBaseUrl": "http://game-gameprovider-queryserver/",
+         "GameProvidersQueryServerBaseUrl": "http://game-gamecommand/",
          "GameInterfaceBaseUrl": "http://game-gameinterface-tfgaming-service:9090/"
       }
     }
