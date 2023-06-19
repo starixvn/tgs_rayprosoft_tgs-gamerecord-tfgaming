@@ -10,14 +10,14 @@ internal class GameHistoryWorkerService : ICommandService<GameHistoryWorkerComma
 {
     private readonly IGameInterfaceTFGamingClient _client;
     private readonly ILogger<GameHistoryWorkerService> _logger;
-    private readonly ICommandService<GamePullRecordSettledCommand> _settledService;
-    private readonly ICommandService<GamePullRecordUnsettledCommand> _unsettledService;
+    private readonly ICommandService<PullRecordSettledCommand> _settledService;
+    private readonly ICommandService<PullRecordUnsettledCommand> _unsettledService;
 
     public GameHistoryWorkerService(
         IGameInterfaceTFGamingClient client,
         ILogger<GameHistoryWorkerService> logger,
-        ICommandService<GamePullRecordUnsettledCommand> unsettledService,
-        ICommandService<GamePullRecordSettledCommand> settledService)
+        ICommandService<PullRecordUnsettledCommand> unsettledService,
+        ICommandService<PullRecordSettledCommand> settledService)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -46,7 +46,7 @@ internal class GameHistoryWorkerService : ICommandService<GameHistoryWorkerComma
 
             await _unsettledService
                 .ExecuteAsync(
-                    command: new GamePullRecordUnsettledCommand(
+                    command: new PullRecordUnsettledCommand(
                         Records: gameHistoryUnsettleds),
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
@@ -75,7 +75,7 @@ internal class GameHistoryWorkerService : ICommandService<GameHistoryWorkerComma
 
             await _settledService
                 .ExecuteAsync(
-                    command: new GamePullRecordSettledCommand(
+                    command: new PullRecordSettledCommand(
                         Records: gameHistorySettleds),
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);

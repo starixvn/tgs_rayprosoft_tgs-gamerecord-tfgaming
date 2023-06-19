@@ -78,6 +78,9 @@ internal class UtensilRepository : IUtensil
         return gameId ?? throw new Exception($"This game does not exist.({gameExternalId})");
     }
 
+    public string GetGameProviderCode()
+        => _gameRecordInfo.GameProviderCode;
+
     public async ValueTask<Guid> GetGameProviderIdAsync(
         CancellationToken cancellationToken = default)
     {

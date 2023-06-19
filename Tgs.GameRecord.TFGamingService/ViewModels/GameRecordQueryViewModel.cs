@@ -1,4 +1,4 @@
-﻿namespace Tgs.GameRecord.TFGamingManualService.ViewModels;
+﻿namespace Tgs.GameRecord.TFGamingService.ViewModels;
 
 public record GameRecordQueryViewModel(
     Uri ApiUrl,

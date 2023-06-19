@@ -4,7 +4,7 @@ using Tgs.GameRecord.TFGamingService.Core.WorkerServices;
 using Tgs.MessageQueue;
 using Tgs.ServiceUtility;
 
-namespace Tgs.GameRecord.TFGamingManualService;
+namespace Tgs.GameRecord.TFGamingService;
 
 public class ManualMessageHandler : IMessageProcessor
 {

@@ -2,4 +2,4 @@
 
 namespace Tgs.GameRecord.TFGamingService.Core.ApplicationServices;
 
-public record GamePullRecordUnsettledCommand(IEnumerable<GameHistoryUnsettled> Records);
+public record PullRecordUnsettledCommand(IEnumerable<GameHistoryUnsettled> Records);

@@ -1,4 +1,4 @@
-﻿namespace Tgs.GameRecord.TFGamingManualService;
+﻿namespace Tgs.GameRecord.TFGamingService;
 
 public record ManualMessageRequest(
     Uri ApiUrl,

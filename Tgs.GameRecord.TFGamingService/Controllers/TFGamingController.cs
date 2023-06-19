@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Tgs.GameRecord.TFGamingManualService.ViewModels;
 using Tgs.GameRecord.TFGamingService.Core.WorkerServices;
+using Tgs.GameRecord.TFGamingService.ViewModels;
 using Tgs.ServiceUtility;
 
-namespace Tgs.GameRecord.TFGamingManualService.Controllers;
+namespace Tgs.GameRecord.TFGamingService.Controllers;
 
 [ApiController]
 [Route("[controller]")]
