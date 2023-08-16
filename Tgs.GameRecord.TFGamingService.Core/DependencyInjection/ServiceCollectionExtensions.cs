@@ -23,12 +23,9 @@ public static class ServiceCollectionExtensions
             .RegisterAllServiceUtilityTypes(
                 Assembly.GetExecutingAssembly(),
                 ServiceLifetime.Transient)
-            .AddMemoryCache()
-            .AddGameRoundsWorkClient()
+            .AddGameRecordHandleClient()
             .AddSingleton<RedisConnectionManager>()
             .AddGameInterfaceTFGamingServiceClient(gameInterfaceTFGamingClientOptions)
             .AddGameCommandClient(gameCommandClientOptions)
-            .AddTransient<IScheduleDispatch>(sp => ActivatorUtilities.CreateInstance<ScheduleDispatch>(sp, sp.GetRequiredService<RedisConnectionManager>().Database))
-            .AddTransient<IUtensil>(sp => ActivatorUtilities.CreateInstance<UtensilRepository>(sp, TimeSpan.FromHours(1)))
-            .AddSingleton<IGameRecordUtensil, GameRecordUtensil>();
+            .AddTransient<IScheduleDispatch>(sp => ActivatorUtilities.CreateInstance<ScheduleDispatch>(sp, sp.GetRequiredService<RedisConnectionManager>().Database));
 }

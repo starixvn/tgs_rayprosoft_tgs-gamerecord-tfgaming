@@ -6,16 +6,13 @@ namespace Tgs.GameRecord.TFGamingService.Core.ApplicationServices;
 internal class PullRecordUnsettledCommandService : ICommandService<PullRecordUnsettledCommand>
 {
     private readonly ILogger<PullRecordUnsettledCommandService> _logger;
-    private readonly ICommandService<HandleRecordCommand> _service;
-    private readonly IGameRecordUtensil _utensil;
+    private readonly ICommandService<HandleRecordUnsettledCommand> _service;
 
     public PullRecordUnsettledCommandService(
         ILogger<PullRecordUnsettledCommandService> logger,
-        IGameRecordUtensil utensil,
-        ICommandService<HandleRecordCommand> service)
+        ICommandService<HandleRecordUnsettledCommand> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _utensil = utensil ?? throw new ArgumentNullException(nameof(utensil));
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
@@ -25,20 +22,15 @@ internal class PullRecordUnsettledCommandService : ICommandService<PullRecordUns
         {
             try
             {
-                var recordInfo = await _utensil
-                    .UnsettleConvertRecordAsync(
-                        record,
-                        cancellationToken)
-                    .ConfigureAwait(false);
                 await _service
-                .ExecuteAsync(
-                     command: new HandleRecordCommand(recordInfo),
+                    .ExecuteAsync(
+                    command: new HandleRecordUnsettledCommand(record),
                      cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "未結算遊戲紀錄發生例外.({record})", record);
+                _logger.LogError(ex, "LogOn:{logOn} Message: An exception occurred in this game record.({gameRecord})", DateTime.Now.ToString("o"), record);
             }
         }
     }

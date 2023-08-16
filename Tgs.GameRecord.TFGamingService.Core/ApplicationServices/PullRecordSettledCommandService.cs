@@ -6,16 +6,13 @@ namespace Tgs.GameRecord.TFGamingService.Core.ApplicationServices;
 internal class PullRecordSettledCommandService : ICommandService<PullRecordSettledCommand>
 {
     private readonly ILogger<PullRecordSettledCommandService> _logger;
-    private readonly ICommandService<HandleRecordCommand> _service;
-    private readonly IGameRecordUtensil _utensil;
+    private readonly ICommandService<HandleRecordSettledCommand> _service;
 
     public PullRecordSettledCommandService(
         ILogger<PullRecordSettledCommandService> logger,
-        IGameRecordUtensil utensil,
-        ICommandService<HandleRecordCommand> service)
+        ICommandService<HandleRecordSettledCommand> service)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _utensil = utensil ?? throw new ArgumentNullException(nameof(utensil));
         _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
@@ -25,20 +22,15 @@ internal class PullRecordSettledCommandService : ICommandService<PullRecordSettl
         {
             try
             {
-                var recordInfo = await _utensil
-                    .SettleConvertRecordAsync(
-                        record,
-                        cancellationToken)
-                    .ConfigureAwait(false);
                 await _service
-                .ExecuteAsync(
-                     command: new HandleRecordCommand(recordInfo),
+                    .ExecuteAsync(
+                    command: new HandleRecordSettledCommand(record),
                      cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "結算遊戲紀錄發生例外.({record})", record);
+                _logger.LogError(ex, "LogOn:{logOn} Message: An exception occurred in this game record.({gameRecord})", DateTime.Now.ToString("o"), record);
             }
         }
     }
