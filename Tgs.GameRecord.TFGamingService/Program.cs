@@ -80,8 +80,8 @@ builder.Services
              var configuration = sp.GetRequiredService<IConfiguration>();
              options.Url = configuration.GetConnectionString("Nats")!;
          })
-         .AddHandler<ScheduleMessageHandler>("gp.gamerecord.schedule.tftf", "gp.gamerecord.schedule")
-         .AddProcessor<ManualMessageHandler>("gp.gamerecord.manual.tftf", "gp.gamerecord.manual");
+         .AddHandler<ScheduleMessageHandler>("gp.gamerecord.schedule.tftf", "gp.gamerecord.schedule.tftf")
+         .AddProcessor<ManualMessageHandler>("gp.gamerecord.manual.tftf", "gp.gamerecord.manual.tftf");
      })
      .ClearAllExchanges()
      .AddNatsGlobPatternExchange("*");
