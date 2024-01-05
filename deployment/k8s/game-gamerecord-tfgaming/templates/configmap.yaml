@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: configmap-{{ include "game-gamerecord-tfgaming.name" . }}
   labels:
-    {{- include "game-gamerecord-saba.labels" . | nindent 4 }}
+    {{- include "game-gamerecord-tfgaming.labels" . | nindent 4 }}
 data:
   appsettings.json: |
     {
