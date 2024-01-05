@@ -1,5 +1,7 @@
-﻿using Tgs.GameInterface.TFGamingService.Protos;
+﻿namespace Tgs.GameRecord.TFGaming.Core.ApplicationServices;
 
-namespace Tgs.GameRecord.TFGaming.Core.ApplicationServices;
-
-public record PullRecordSettledCommand(IEnumerable<GameHistorySettled> Records);
+public record PullRecordSettledCommand(
+    Uri ApiUrl,
+    string PrivateToken,
+    DateTimeOffset StartTime,
+    DateTimeOffset EndTime);

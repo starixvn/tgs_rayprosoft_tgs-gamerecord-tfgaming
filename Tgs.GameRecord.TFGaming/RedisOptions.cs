@@ -1,4 +1,5 @@
-﻿namespace Tgs.GameRecord.TFGaming.Core;
+﻿using Tgs.GameRecord.TFGaming.Core;
+namespace Tgs.GameRecord.TFGaming;
 
 public record RedisOptions
 {

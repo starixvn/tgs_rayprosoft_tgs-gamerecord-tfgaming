@@ -1,22 +1,16 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Text.Json.Nodes;
+using Microsoft.Extensions.Options;
 using Tgs.GameRecord.Handle.Client;
 using Tgs.GameRecord.Handle.Common.Protos;
 using Tgs.ServiceUtility;
 
 namespace Tgs.GameRecord.TFGaming.Core.ApplicationServices;
 
-internal class HandleRecordUnsettledCommandService : ICommandService<HandleRecordUnsettledCommand>
+internal class HandleRecordUnsettledCommandService(
+    IOptions<GameRecordInfoOptions> gameRecordInfoOptions,
+    IGameRecordHandleClient client) : ICommandService<HandleRecordUnsettledCommand>
 {
-    private readonly IGameRecordHandleClient _client;
-    private readonly GameRecordInfoOptions _gameRecordInfo;
-
-    public HandleRecordUnsettledCommandService(
-        IOptions<GameRecordInfoOptions> gameRecordInfoOptions,
-        IGameRecordHandleClient client)
-    {
-        _gameRecordInfo = gameRecordInfoOptions.Value;
-        _client = client ?? throw new ArgumentNullException(nameof(client));
-    }
+    private readonly GameRecordInfoOptions _gameRecordInfo = gameRecordInfoOptions.Value;
 
     public async ValueTask ExecuteAsync(HandleRecordUnsettledCommand command, CancellationToken cancellationToken = default)
     {
@@ -24,7 +18,7 @@ internal class HandleRecordUnsettledCommandService : ICommandService<HandleRecor
         var bet = command.Record.Bet.ToDecimal().GetValueOrDefault(0);
         var validBet = command.Record.ValidBet.ToDecimal().GetValueOrDefault(0);
 
-        await _client
+        await client
             .MessageAsync(
             gameProviderCode: _gameRecordInfo.GameProviderCode,
             playerCode: command.Record.PlayerCode,
@@ -47,7 +41,7 @@ internal class HandleRecordUnsettledCommandService : ICommandService<HandleRecor
             commission: 0.0m,
             turnover: 0.0m,
             winLoss: 0.0m,
-            additionalData: command.Record.AdditionalData,
+            additionalData: JsonNode.Parse(command.Record.AdditionalData)!,
             cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }

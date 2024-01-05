@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using System.Text.Json.Nodes;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Tgs.GameInterface.TFGamingService.Protos;
@@ -18,7 +19,8 @@ public class HandleRecordSettledCommandServiceUnitTest
             GameProviderCode = "TFTF",
             GameExternalId = "tf_esports",
             GameProviderConfiguration = "TFTFConfiguration",
-            GameProviderHangfire = "tftf-schedule:hangfire:",
+            HangfirePrefix = "gamerecord-tftf-hangfire:",
+            HangfireLocking = "gamerecord-tftf-locking:",
             IntervalMinutes = 15,
             IntervalMinutesMax = 1440,
             IntervalMinutesMinimum = 2,
@@ -72,7 +74,7 @@ public class HandleRecordSettledCommandServiceUnitTest
             commission: Arg.Is(0.0m),
             turnover: Arg.Is(218.00m),
             winLoss: Arg.Is(-218.00m),
-            additionalData: Arg.Is(command.Record.AdditionalData),
+            additionalData: Arg.Any<JsonNode>(),
             cancellationToken: Arg.Any<CancellationToken>());
     }
 
@@ -84,7 +86,8 @@ public class HandleRecordSettledCommandServiceUnitTest
             GameProviderCode = "TFTF",
             GameExternalId = "tf_esports",
             GameProviderConfiguration = "TFTFConfiguration",
-            GameProviderHangfire = "tftf-schedule:hangfire:",
+            HangfirePrefix = "gamerecord-tftf-hangfire:",
+            HangfireLocking = "gamerecord-tftf-locking:",
             IntervalMinutes = 15,
             IntervalMinutesMax = 1440,
             IntervalMinutesMinimum = 2,
@@ -138,7 +141,7 @@ public class HandleRecordSettledCommandServiceUnitTest
             commission: Arg.Is(0.0m),
             turnover: Arg.Is(200.00m),
             winLoss: Arg.Is(138.00m),
-            additionalData: Arg.Is(command.Record.AdditionalData),
+            additionalData: Arg.Any<JsonNode>(),
             cancellationToken: Arg.Any<CancellationToken>());
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Text.Json.Nodes;
+using Microsoft.Extensions.Options;
 using Tgs.GameInterface.TFGamingService.Protos;
 using Tgs.GameRecord.Handle.Client;
 using Tgs.GameRecord.Handle.Common.Protos;
@@ -6,18 +7,11 @@ using Tgs.ServiceUtility;
 
 namespace Tgs.GameRecord.TFGaming.Core.ApplicationServices;
 
-internal class HandleRecordSettledCommandService : ICommandService<HandleRecordSettledCommand>
+internal class HandleRecordSettledCommandService(
+    IOptions<GameRecordInfoOptions> gameRecordInfoOptions,
+    IGameRecordHandleClient client) : ICommandService<HandleRecordSettledCommand>
 {
-    private readonly IGameRecordHandleClient _client;
-    private readonly GameRecordInfoOptions _gameRecordInfo;
-
-    public HandleRecordSettledCommandService(
-        IOptions<GameRecordInfoOptions> gameRecordInfoOptions,
-        IGameRecordHandleClient client)
-    {
-        _gameRecordInfo = gameRecordInfoOptions.Value;
-        _client = client ?? throw new ArgumentNullException(nameof(client));
-    }
+    private readonly GameRecordInfoOptions _gameRecordInfo = gameRecordInfoOptions.Value;
 
     public async ValueTask ExecuteAsync(HandleRecordSettledCommand command, CancellationToken cancellationToken = default)
     {
@@ -38,7 +32,7 @@ internal class HandleRecordSettledCommandService : ICommandService<HandleRecordS
             _ => (winLoss > 0) ? WagerStates.Win : WagerStates.Lose
         };
 
-        await _client
+        await client
             .MessageAsync(
             gameProviderCode: _gameRecordInfo.GameProviderCode,
             playerCode: command.Record.PlayerCode,
@@ -61,7 +55,7 @@ internal class HandleRecordSettledCommandService : ICommandService<HandleRecordS
             commission: commission,
             turnover: turnover,
             winLoss: winLoss,
-            additionalData: command.Record.AdditionalData,
+            additionalData: JsonNode.Parse(command.Record.AdditionalData)!,
             cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
