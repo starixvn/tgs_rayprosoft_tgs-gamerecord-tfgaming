@@ -1,7 +1,6 @@
-﻿using Tgs.GameRecord.TFGaming.Core;
-namespace Tgs.GameRecord.TFGaming;
+﻿namespace Tgs.GameRecord.TFGaming;
 
 public record RedisOptions
 {
-    public string ConnectionString { get; set; } = "localhost";
+	public string ConnectionString { get; set; } = "localhost";
 }

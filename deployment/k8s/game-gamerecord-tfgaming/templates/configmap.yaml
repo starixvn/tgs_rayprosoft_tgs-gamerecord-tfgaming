@@ -10,7 +10,9 @@ data:
       "Logging": {
         "LogLevel": { 
           "Default": "Warning",
-          "Tgs.GameRecord.TFGaming.Messages": "Information"
+          "Tgs.GameRecord.TFGaming.Messages": "Information",
+          "Tgs.GameRecord.TFGaming.Core.ApplicationServices.HandleRecordSettledCommandService": "Information",
+          "Tgs.GameRecord.TFGaming.Core.ApplicationServices.HandleRecordUnsettledCommandService": "Information"
         }
       },
       "GameRecord": {
