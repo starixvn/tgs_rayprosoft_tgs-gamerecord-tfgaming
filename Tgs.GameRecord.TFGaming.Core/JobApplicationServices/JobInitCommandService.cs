@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Hangfire;
 using Hangfire.Storage;
@@ -13,7 +14,7 @@ namespace Tgs.GameRecord.TFGaming.Core.JobApplicationServices;
 internal class JobInitCommandService(
 	ILogger<JobInitCommandService> logger,
 	IOptions<GameRecordInfoOptions> options,
-	IHangfireLock hangfireLock,
+	IHangfireLockRepository hangfireLock,
 	IGameCommandClient client) : ICommandService<JobInitCommand>
 {
 	private readonly GameRecordInfoOptions _gameRecordInfo = options.Value;
@@ -32,7 +33,12 @@ internal class JobInitCommandService(
 				cancellationToken: cancellationToken)
 				.ConfigureAwait(false))
 			{
-				logger.LogWarning("LogOn:{logOn} Message:進行初始化動作，已經有其他服務進行", DateTime.Now.ToString("o"));
+				logger.LogWarning("{logWarning}",
+					JsonSerializer.Serialize(new
+					{
+						LogOn = DateTime.Now.ToString("u"),
+						Message = "This game provider configuration schedule has been initialized."
+					}));
 				return;
 			}
 
@@ -97,23 +103,28 @@ internal class JobInitCommandService(
 
 				var recurringJobId = $"{gameProviderConfig.Name}|{gameProviderConfig.GameProviderConfigId}";
 
-				RecurringJob.AddOrUpdate<IHangfireUtensil>(
+				RecurringJob.AddOrUpdate<IHangfireUtensilRepository>(
 					recurringJobId: recurringJobId,
 					methodCall: service => service.JobExecuteAsync(jobExecuteCommand),
 					cronExpression: Cron.Minutely(),
 					options: _recurringJobOptions);
 
 				//初始化強制第一次處理
-				_ = BackgroundJob.Enqueue<IHangfireUtensil>(service => service.JobExecuteAsync(jobExecuteCommand));
+				_ = BackgroundJob.Enqueue<IHangfireUtensilRepository>(service => service.JobExecuteAsync(jobExecuteCommand));
 			}
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "LogOn:{logOn} Message:遊戲廠商初始化排程發生例外", DateTime.Now.ToString("o"));
+			logger.LogError(ex, "{logError}",
+				JsonSerializer.Serialize(new
+				{
+					LogOn = DateTime.Now.ToString("u"),
+					Message = "The game provider configuration schedule initialization failed."
+				}));
 		}
 		finally
 		{
-			_ = BackgroundJob.Schedule<IHangfireUtensil>(service => service.JobCheckAsync(), TimeSpan.FromMinutes(1));
+			_ = BackgroundJob.Schedule<IHangfireUtensilRepository>(service => service.JobCheckAsync(), TimeSpan.FromMinutes(1));
 		}
 	}
 }

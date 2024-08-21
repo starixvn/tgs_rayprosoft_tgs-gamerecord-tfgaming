@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Tgs.GameInterface.TFGamingService.Client;
+using Tgs.GameInterface.TFGamingService.Protos;
 using Tgs.ServiceUtility;
 
 namespace Tgs.GameRecord.TFGaming.Core.ApplicationServices;
@@ -24,29 +25,59 @@ internal class PullRecordUnsettledCommandService(
 				.ToArrayAsync(cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 
-			logger.LogInformation("LogOn:{logOn} | Action:GameHistoryUnsettledAsync | Response:{response}",
-				DateTime.UtcNow.ToString("O"),
-				JsonSerializer.Serialize(gameHistoryUnsettleds));
+			logger.LogInformation("{logInformation}",
+				JsonSerializer.Serialize(new
+				{
+					LogOn = DateTime.Now.ToString("u"),
+					Nameof = nameof(PullRecordUnsettledCommandService),
+					Req = new
+					{
+						command.ApiUrl,
+						command.PrivateToken,
+						StartTime = command.StartTime.UtcDateTime.ToString("u"),
+						EndTime = command.EndTime.UtcDateTime.ToString("u")
+					},
+					Resp = gameHistoryUnsettleds
+				}));
 
 			foreach (var gameHistoryUnsettled in gameHistoryUnsettleds)
 			{
 				try
 				{
-					await service
-						.ExecuteAsync(
+					await service.ExecuteAsync(
 						command: new HandleRecordUnsettledCommand(gameHistoryUnsettled),
-						 cancellationToken: cancellationToken)
+						cancellationToken: cancellationToken)
 						.ConfigureAwait(false);
 				}
 				catch (Exception ex)
 				{
-					logger.LogError(ex, "LogOn:{logOn} Message: An exception occurred in this game record.({gameRecord})", DateTime.Now.ToString("o"), gameHistoryUnsettled);
+					logger.LogError(ex, "{logError}",
+						JsonSerializer.Serialize(new
+						{
+							LogOn = DateTime.Now.ToString("u"),
+							Nameof = nameof(PullRecordUnsettledCommandService),
+							GameRecord = gameHistoryUnsettled,
+							Message = "An exception occurred in this game record"
+						}));
 				}
 			}
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "LogOn:{logOn} | Action:GameHistoryUnsettledAsync | Message:TFGaming處理未結算過程中發生例外", DateTime.UtcNow.ToString("O"));
+			logger.LogError(ex, "{logError}",
+				JsonSerializer.Serialize(new
+				{
+					LogOn = DateTime.Now.ToString("u"),
+					Nameof = nameof(PullRecordUnsettledCommandService),
+					Req = new
+					{
+						command.ApiUrl,
+						command.PrivateToken,
+						StartTime = command.StartTime.UtcDateTime.ToString("u"),
+						EndTime = command.EndTime.UtcDateTime.ToString("u")
+					},
+					Message = "An exception occurred while retrieving game records"
+				}));
 		}
 	}
 }

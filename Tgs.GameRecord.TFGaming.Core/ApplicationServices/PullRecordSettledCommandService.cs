@@ -25,9 +25,20 @@ internal class PullRecordSettledCommandService(
 				.ToArrayAsync(cancellationToken: cancellationToken)
 				.ConfigureAwait(false);
 
-			logger.LogInformation("LogOn:{logOn} | Action:GameHistorySettledAsync | Response:{response}",
-				DateTime.UtcNow.ToString("O"),
-				JsonSerializer.Serialize(gameHistorySettleds));
+			logger.LogInformation("{logInformation}",
+				JsonSerializer.Serialize(new
+				{
+					LogOn = DateTime.Now.ToString("u"),
+					Nameof = nameof(PullRecordSettledCommandService),
+					Req = new
+					{
+						command.ApiUrl,
+						command.PrivateToken,
+						StartTime = command.StartTime.UtcDateTime.ToString("u"),
+						EndTime = command.EndTime.UtcDateTime.ToString("u")
+					},
+					Resp = gameHistorySettleds
+				}));
 
 			foreach (var gameHistorySettled in gameHistorySettleds)
 			{
@@ -35,18 +46,38 @@ internal class PullRecordSettledCommandService(
 				{
 					await service.ExecuteAsync(
 						command: new HandleRecordSettledCommand(gameHistorySettled),
-						 cancellationToken: cancellationToken)
+						cancellationToken: cancellationToken)
 						.ConfigureAwait(false);
 				}
 				catch (Exception ex)
 				{
-					logger.LogError(ex, "LogOn:{logOn} Message: An exception occurred in this game record.({gameRecord})", DateTime.Now.ToString("o"), gameHistorySettled);
+					logger.LogError(ex, "{logError}",
+						JsonSerializer.Serialize(new
+						{
+							LogOn = DateTime.Now.ToString("u"),
+							Nameof = nameof(PullRecordSettledCommandService),
+							GameRecord = gameHistorySettled,
+							Message = "An exception occurred in this game record"
+						}));
 				}
 			}
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "LogOn:{logOn} | Action:GameHistorySettledAsync | Message:TFGaming處理結算過程中發生例外", DateTime.UtcNow.ToString("O"));
+			logger.LogError(ex, "{logError}",
+				JsonSerializer.Serialize(new
+				{
+					LogOn = DateTime.Now.ToString("u"),
+					Nameof = nameof(PullRecordSettledCommandService),
+					Req = new
+					{
+						command.ApiUrl,
+						command.PrivateToken,
+						StartTime = command.StartTime.UtcDateTime.ToString("u"),
+						EndTime = command.EndTime.UtcDateTime.ToString("u")
+					},
+					Message = "An exception occurred while retrieving game records"
+				}));
 		}
 	}
 }
