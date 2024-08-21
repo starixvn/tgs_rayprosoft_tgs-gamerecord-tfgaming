@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Tgs.GameInterface.TFGamingService.Protos;
+using Tgs.GameRecord.Handle.Client;
 using Tgs.GameRecord.TFGaming.Core.ApplicationServices;
 using Valhalla.MessageQueue;
 
@@ -15,7 +16,7 @@ public class HandleRecordSettledCommandServiceUnitTest
 	public async Task Loss()
 	{
 		var faceLogger = NullLogger<HandleRecordSettledCommandService>.Instance;
-		var gameRecordInfo = Options.Create(new GameRecordInfoOptions
+		var fakeGameRecordInfoOptions = Options.Create(new GameRecordInfoOptions
 		{
 			GameProviderCode = "TFTF",
 			GameExternalId = "tf_esports",
@@ -27,7 +28,12 @@ public class HandleRecordSettledCommandServiceUnitTest
 			IntervalMinutesMinimum = 2,
 			LockMinute = 13
 		});
-		var fakeMessageSender = Substitute.For<IMessageSender>();
+		var fakePolicySettingsOptions = Options.Create(new PolicySettingsOptions
+		{
+			RetryCount = 1,
+			RetrySeconds = 1,
+		});
+		var fakeGameRecordHandleClient = Substitute.For<IGameRecordHandleClient>();
 
 		var command = new HandleRecordSettledCommand(
 			Record: new GameHistorySettled
@@ -45,28 +51,28 @@ public class HandleRecordSettledCommandServiceUnitTest
 				AdditionalData = "{\"id\":\"CDUBF33756745W0234PLS4340\",\"bet_selection\":\"away\",\"odds\":-0.7,\"currency\":\"HKD\",\"amount\":218,\"game_type_name\":\"League of Legends\",\"game_market_name\":\"MAP 3 WINNER (MAPS)\",\"market_option\":\"map\",\"map_num\":\"MAP 3\",\"bet_type_name\":\"SPWINMAP\",\"competition_name\":\"2023 Campeonato Brasileiro de League of Legends Academy Split 2\",\"event_id\":25044986,\"event_name\":\"KaBuM! Academy vs RED Academy\",\"event_datetime\":\"2023-08-15T19:55:00Z\",\"date_created\":\"2023-08-15T22:02:34.343958Z\",\"settlement_datetime\":\"2023-08-15T22:44:58.319438Z\",\"modified_datetime\":\"2023-08-15T22:45:00.070824Z\",\"settlement_status\":\"settled\",\"result\":\"home\",\"result_status\":\"LOSS\",\"earnings\":-218,\"handicap\":null,\"is_combo\":false,\"member_code\":\"4ukbau4ts4xz\",\"is_unsettled\":false,\"ticket_type\":\"live\",\"malay_odds\":-0.7,\"euro_odds\":2.42,\"member_odds\":1.42,\"member_odds_style\":\"hongkong\",\"game_type_id\":3,\"request_source\":\"mobile-browser\"}"
 			});
 
-		var service = new HandleRecordSettledCommandService(
+		var sut = new HandleRecordSettledCommandService(
 			faceLogger,
-			gameRecordInfo,
-			fakeMessageSender);
+			fakeGameRecordInfoOptions,
+			fakePolicySettingsOptions,
+			fakeGameRecordHandleClient);
 
-		await service.ExecuteAsync(command);
+		await sut.ExecuteAsync(command);
 
-		_ = fakeMessageSender
+		_ = fakeGameRecordHandleClient
 			.Received(1)
-			.PublishAsync(
-			subject: Arg.Is(Handle.Common.GameRecordHandleNatsConst.GameRecordHandleRequest),
-			data: Arg.Is(new Handle.Common.Protos.GameRecordHandleRequest
+			.HandleAsync(
+			source: Arg.Is(new Handle.Common.ViewModels.GameRecordHandleViewModel
 			{
-				GameProviderCode = gameRecordInfo.Value.GameProviderCode,
+				GameProviderCode = fakeGameRecordInfoOptions.Value.GameProviderCode,
 				PlayerCode = command.Record.PlayerCode,
 				ExternalRoundId = command.Record.ExternalRoundId,
 				ExternalBetId = command.Record.ExternalRoundId,
-				ExternalGameId = gameRecordInfo.Value.GameExternalId,
-				ExternalCreatedOn = command.Record.ExternalCreatedOn,
-				ExternalClosedOn = command.Record.ExternalClosedOn,
-				ExternalPayoffOn = command.Record.ExternalClosedOn,
-				ExternalResettleOn = DateTimeOffset.UnixEpoch.ToTimestamp(),
+				ExternalGameId = fakeGameRecordInfoOptions.Value.GameExternalId,
+				ExternalCreatedOn = command.Record.ExternalCreatedOn.ToDateTimeOffset(),
+				ExternalClosedOn = command.Record.ExternalClosedOn.ToDateTimeOffset(),
+				ExternalPayoffOn = command.Record.ExternalClosedOn.ToDateTimeOffset(),
+				ExternalResettleOn = DateTimeOffset.UnixEpoch,
 				BetState = Handle.Common.Protos.BetState.Loss,
 				BetType = Handle.Common.Protos.BetType.Normal,
 				FreeGameState = Handle.Common.Protos.FreeGameState.None,
@@ -90,7 +96,7 @@ public class HandleRecordSettledCommandServiceUnitTest
 	public async Task Win()
 	{
 		var faceLogger = NullLogger<HandleRecordSettledCommandService>.Instance;
-		var gameRecordInfo = Options.Create(new GameRecordInfoOptions
+		var fakeGameRecordInfoOptions = Options.Create(new GameRecordInfoOptions
 		{
 			GameProviderCode = "TFTF",
 			GameExternalId = "tf_esports",
@@ -102,7 +108,12 @@ public class HandleRecordSettledCommandServiceUnitTest
 			IntervalMinutesMinimum = 2,
 			LockMinute = 13
 		});
-		var fakeMessageSender = Substitute.For<IMessageSender>();
+		var fakePolicySettingsOptions = Options.Create(new PolicySettingsOptions
+		{
+			RetryCount = 1,
+			RetrySeconds = 1,
+		});
+		var fakeGameRecordHandleClient = Substitute.For<IGameRecordHandleClient>();
 
 		var command = new HandleRecordSettledCommand(
 			Record: new GameHistorySettled
@@ -120,28 +131,28 @@ public class HandleRecordSettledCommandServiceUnitTest
 				AdditionalData = "{\"id\":\"CDUBE34993342I5001BOT4525\",\"bet_selection\":\"home\",\"odds\":0.69,\"currency\":\"HKD\",\"amount\":200,\"game_type_name\":\"CS:GO\",\"game_market_name\":\"MAP 1 ROUND HANDICAP (INCL. OVERTIME)\",\"market_option\":\"map\",\"map_num\":\"MAP 1\",\"bet_type_name\":\"AH\",\"competition_name\":\"2023 CCT Central Europe Series #7\",\"event_id\":25015184,\"event_name\":\"Looking4Org vs B8\",\"event_datetime\":\"2023-08-14T08:00:00Z\",\"date_created\":\"2023-08-14T08:50:01.798746Z\",\"settlement_datetime\":\"2023-08-14T09:06:41.269454Z\",\"modified_datetime\":\"2023-08-14T09:06:45.134534Z\",\"settlement_status\":\"settled\",\"result\":\"16:11\",\"result_status\":\"WIN\",\"earnings\":338,\"handicap\":\"-4.5\",\"is_combo\":false,\"member_code\":\"4ukk96lpkb0a\",\"is_unsettled\":false,\"ticket_type\":\"live\",\"malay_odds\":0.69,\"euro_odds\":1.69,\"member_odds\":0.69,\"member_odds_style\":\"hongkong\",\"game_type_id\":1,\"request_source\":\"desktop-browser\"}"
 			});
 
-		var service = new HandleRecordSettledCommandService(
+		var sut = new HandleRecordSettledCommandService(
 			faceLogger,
-			gameRecordInfo,
-			fakeMessageSender);
+			fakeGameRecordInfoOptions,
+			fakePolicySettingsOptions,
+			fakeGameRecordHandleClient);
 
-		await service.ExecuteAsync(command);
+		await sut.ExecuteAsync(command);
 
-		_ = fakeMessageSender
+		_ = fakeGameRecordHandleClient
 			.Received(1)
-			.PublishAsync(
-			subject: Arg.Is(Handle.Common.GameRecordHandleNatsConst.GameRecordHandleRequest),
-			data: Arg.Is(new Handle.Common.Protos.GameRecordHandleRequest
+			.HandleAsync(
+			source: Arg.Is(new Handle.Common.ViewModels.GameRecordHandleViewModel
 			{
-				GameProviderCode = gameRecordInfo.Value.GameProviderCode,
+				GameProviderCode = fakeGameRecordInfoOptions.Value.GameProviderCode,
 				PlayerCode = command.Record.PlayerCode,
 				ExternalRoundId = command.Record.ExternalRoundId,
 				ExternalBetId = command.Record.ExternalRoundId,
-				ExternalGameId = gameRecordInfo.Value.GameExternalId,
-				ExternalCreatedOn = command.Record.ExternalCreatedOn,
-				ExternalClosedOn = command.Record.ExternalClosedOn,
-				ExternalPayoffOn = command.Record.ExternalClosedOn,
-				ExternalResettleOn = DateTimeOffset.UnixEpoch.ToTimestamp(),
+				ExternalGameId = fakeGameRecordInfoOptions.Value.GameExternalId,
+				ExternalCreatedOn = command.Record.ExternalCreatedOn.ToDateTimeOffset(),
+				ExternalClosedOn = command.Record.ExternalClosedOn.ToDateTimeOffset(),
+				ExternalPayoffOn = command.Record.ExternalClosedOn.ToDateTimeOffset(),
+				ExternalResettleOn = DateTimeOffset.UnixEpoch,
 				BetState = Handle.Common.Protos.BetState.Win,
 				BetType = Handle.Common.Protos.BetType.Normal,
 				FreeGameState = Handle.Common.Protos.FreeGameState.None,
