@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Tgs.GameInterface.TFGamingService.Client;
-using Tgs.GameInterface.TFGamingService.Protos;
 using Tgs.ServiceUtility;
 
 namespace Tgs.GameRecord.TFGaming.Core.ApplicationServices;

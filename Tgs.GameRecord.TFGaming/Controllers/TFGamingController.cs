@@ -22,7 +22,7 @@ public class TFGamingController : ControllerBase
 		TFGamingGameRecordMessage source)
 		=> messageSender.PublishAsync(
 			subject: TFGamingNatsConst.ManualPublish,
-			data: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(source)),
+			data: JsonSerializer.SerializeToUtf8Bytes(source),
 			cancellationToken: HttpContext.RequestAborted);
 
 	/// <summary>
@@ -37,6 +37,6 @@ public class TFGamingController : ControllerBase
 		TFGamingGameRecordMessage source)
 		=> messageSender.PublishAsync(
 			subject: TFGamingNatsConst.SchedulePublish,
-			data: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(source)),
+			data: JsonSerializer.SerializeToUtf8Bytes(source),
 			cancellationToken: HttpContext.RequestAborted);
 }
